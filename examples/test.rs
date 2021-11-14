@@ -1,6 +1,6 @@
 use determinate::determinate;
 
-//#[determinate]
+#[determinate]
 fn inputs(i: i32, j: i32) -> (i32, i32) {
     (i, j)
 }

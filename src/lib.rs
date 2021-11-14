@@ -2,8 +2,9 @@ use proc_macro::TokenStream;
 use quote::quote;
 use syn::fold::Fold;
 use syn::parse::{Parse, ParseStream, Result};
-use syn::{parse_macro_input, parse_quote, ItemFn};
-
+use syn::punctuated::Punctuated;
+use syn::token::Comma;
+use syn::{parse_macro_input, parse_quote, ItemFn, Pat};
 struct Stack;
 
 impl Parse for Stack {
@@ -33,13 +34,21 @@ impl Fold for Stack {
             None => quote! { dyn Future<Output = ()> },
         };
 
+        let mut input_idents = Punctuated::<Box<Pat>, Comma>::new();
+        for input in inputs.iter() {
+            match input {
+                syn::FnArg::Typed(pat_type) => input_idents.push(pat_type.pat.clone()),
+                syn::FnArg::Receiver(_) => continue,
+            }
+        }
+
         let mut block = block;
         block.stmts = parse_quote! {
                 use std::pin::Pin;
                 use futures::{executor::block_on, future::join_all, Future};
                 let f = |#inputs| #output { #(#stmts)* };
                 let wrapper = |f: fn(#inputs) #output| -> Pin<Box<#future_type>> {
-            Box::pin(async move { return f() })
+            Box::pin(async move { f(#input_idents) })
         };
                 let futures = vec![wrapper(f), wrapper(f)];
                 let future = async { join_all(futures).await };
