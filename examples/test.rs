@@ -1,9 +1,8 @@
 use determinate::determinate;
-use futures::Future;
 
-#[inline]
-fn wrapper<T>(f: fn() -> T) -> impl Future<Output = T> {
-    async move { f() }
+//#[determinate]
+fn inputs(i: i32, j: i32) -> (i32, i32) {
+    (i, j)
 }
 
 #[determinate]
@@ -11,14 +10,20 @@ fn testing() -> i32 {
     42
 }
 
+fn world() {
+    println!("World!");
+}
+
 #[determinate]
-fn test123() {
-    println!("Hello, World!")
+fn hello() {
+    println!("Hello,");
+    world();
 }
 
 fn main() {
-    test123();
+    hello();
     println!("{}", testing());
+    println!("{:?}", inputs(1, 2));
 }
 
 #[cfg(test)]
