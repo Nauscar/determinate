@@ -11,6 +11,7 @@ futures = "^0.3.17"
 num_cpus = "^1.13.0"
 quote = "^1.0.10"
 syn = { version = "^1.0.81", features = ["full", "fold", "printing", "extra-traits"] }
+once_cell = "^1.8.0"
 
 [dev-dependencies]
 rand = "*"

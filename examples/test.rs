@@ -32,7 +32,7 @@ mod tests {
 
     #[test]
     fn it_works() {
-        let result = testing();
-        assert_eq!(result, 42);
+        let (i, j) = (1, 2);
+        assert_eq!(inputs(i, j), (i, j));
     }
 }

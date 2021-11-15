@@ -80,10 +80,26 @@ pub fn determinate(attr: TokenStream, item: TokenStream) -> TokenStream {
 #[proc_macro_attribute]
 pub fn indeterminate(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let input = syn::parse_macro_input!(item as ItemFn);
-    let name = &input.sig;
+
+    let ItemFn {
+        attrs,
+        vis,
+        sig,
+        block,
+    } = input;
+    let stmts = &block.stmts;
+
+    let output = &sig.output;
+    let output_type = match output {
+        syn::ReturnType::Default => None,
+        syn::ReturnType::Type(_, output_type) => Some(output_type),
+    };
+
     TokenStream::from(quote! {
-        #name {
-            42 // FIXME
+        #(#attrs)* #vis #sig {
+            use once_cell::sync::Lazy;
+            static RESULT: Lazy<#output_type> = Lazy::new(|| { #(#stmts)* });
+            *RESULT
         }
     })
 }
