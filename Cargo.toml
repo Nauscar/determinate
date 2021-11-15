@@ -8,5 +8,9 @@ proc-macro = true
 
 [dependencies]
 futures = "^0.3.17"
+num_cpus = "^1.13.0"
 quote = "^1.0.10"
 syn = { version = "^1.0.81", features = ["full", "fold", "printing", "extra-traits"] }
+
+[dev-dependencies]
+rand = "*"

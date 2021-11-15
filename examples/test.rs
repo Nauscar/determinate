@@ -1,23 +1,23 @@
-use determinate::determinate;
+use determinate::{determinate, indeterminate};
 
 #[determinate]
 fn inputs(i: i32, j: i32) -> (i32, i32) {
     (i, j)
 }
 
-#[determinate]
-fn testing() -> i32 {
-    42
+#[indeterminate]
+fn random() -> i32 {
+    rand::random()
 }
 
-fn world() {
-    println!("World!");
+#[determinate]
+fn testing() -> i32 {
+    random()
 }
 
 #[determinate]
 fn hello() {
-    println!("Hello,");
-    world();
+    println!("Hello, World!");
 }
 
 fn main() {

@@ -5,15 +5,15 @@ use syn::parse::{Parse, ParseStream, Result};
 use syn::punctuated::Punctuated;
 use syn::token::Comma;
 use syn::{parse_macro_input, parse_quote, ItemFn, Pat};
-struct Stack;
+struct Determinate;
 
-impl Parse for Stack {
+impl Parse for Determinate {
     fn parse(_input: ParseStream) -> Result<Self> {
-        Ok(Stack {})
+        Ok(Determinate {})
     }
 }
 
-impl Fold for Stack {
+impl Fold for Determinate {
     fn fold_item_fn(&mut self, input: ItemFn) -> ItemFn {
         let ItemFn {
             attrs,
@@ -50,7 +50,10 @@ impl Fold for Stack {
                 let wrapper = |f: fn(#inputs) #output| -> Pin<Box<#future_type>> {
             Box::pin(async move { f(#input_idents) })
         };
-                let futures = vec![wrapper(f), wrapper(f)];
+                let mut futures = vec![];
+                for _ in 0..num_cpus::get() {
+                    futures.push(wrapper(f));
+                }
                 let future = async { join_all(futures).await };
                 let values = block_on(future);
                 assert!(values.iter().all(|&item| item == values[0]));
@@ -69,7 +72,18 @@ impl Fold for Stack {
 #[proc_macro_attribute]
 pub fn determinate(attr: TokenStream, item: TokenStream) -> TokenStream {
     let input = syn::parse_macro_input!(item as ItemFn);
-    let mut stack = parse_macro_input!(attr as Stack);
-    let output = stack.fold_item_fn(input);
+    let mut determinate = parse_macro_input!(attr as Determinate);
+    let output = determinate.fold_item_fn(input);
     TokenStream::from(quote!(#output))
+}
+
+#[proc_macro_attribute]
+pub fn indeterminate(_attr: TokenStream, item: TokenStream) -> TokenStream {
+    let input = syn::parse_macro_input!(item as ItemFn);
+    let name = &input.sig;
+    TokenStream::from(quote! {
+        #name {
+            42 // FIXME
+        }
+    })
 }
